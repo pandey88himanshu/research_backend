@@ -18,8 +18,16 @@ const addPaper = async (paperData) => {
 };
 
 const fetchPapers = async (queryParams) => {
-  const { domain, readingStage, impactScore, dateAdded } = queryParams;
+  const { domain, readingStage, impactScore, dateAdded, search } = queryParams;
   const where = {};
+
+  // Search filter: search in title or firstAuthor
+  if (search && search.trim()) {
+    where.OR = [
+      { title: { contains: search, mode: "insensitive" } },
+      { firstAuthor: { contains: search, mode: "insensitive" } },
+    ];
+  }
 
   if (domain) {
     where.domain = { in: domain.split(",").map(formatEnum) };
@@ -33,7 +41,7 @@ const fetchPapers = async (queryParams) => {
     where.impactScore = { in: impactScore.split(",").map(formatEnum) };
   }
 
-  if (dateAdded && dateAdded !== "All time") {
+  if (dateAdded && dateAdded !== "All time" && dateAdded !== "All Time") {
     const now = new Date();
     let fromDate;
 
